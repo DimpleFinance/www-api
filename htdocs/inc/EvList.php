@@ -1,22 +1,13 @@
 <?php
 
-//print "<pre>";
+print "<pre>";
 
-$d = __DIR__;
-$d = dirname($d);
-$d = dirname($d);
-
+//$d = __DIR__;
+//$d = dirname($d);
+//$d = dirname($d);
 
 
 $sol = "txs";
-$f = $contract_dir."y_contract.".$net.".".$sol.".txt";
-//print $f."\n";
-if(file_exists($f))
-{
-$contractAddress3[$sol] = file_get_contents($f);
-}
-
-$sol = "stake";
 $f = $contract_dir."y_contract.".$net.".".$sol.".txt";
 //print $f."\n";
 if(file_exists($f))
@@ -32,10 +23,10 @@ if(file_exists($f))
 $contractAddress3[$sol] = file_get_contents($f);
 }
 
+
 //print_r($contractAddress3);
 unset($m);
 $m[Borrow] = "swap5";
-$m[Stake] = "stake";
 
 $limit = 10000;
 $t = $item2*1;
@@ -56,8 +47,8 @@ unset($v,$t,$t2);
 //$t = substr($w,2);
 //$i2 = dechex($i);
 //$b .= view_number($i2,64,0);
-// TxsList:        0x6a57fde1
-$b = "0x6a57fde1";  
+// EvList: 0x85bbc41e
+$b = "0x85bbc41e";  
 
 $t = $contractAddress3[$name];
 $t = substr($t,2);              
@@ -77,7 +68,7 @@ $v[method] = "eth_call";
 $v[params][0] = $t2;
 $v[params][1] = "latest";
 //$v[id] = $row[id];
-$v[id] = "TxsList_".$name;
+$v[id] = "EvList_".$name;
 $jss[] = $v;
 }
 
@@ -85,25 +76,27 @@ $jss[] = $v;
 //print_r($jss);die;
 unset($out,$o);
 //print "Send ".count($jss)." requests to blockchain\n";
-//$t = $time;
+$t = $time;
 //print "Get data from blockchain in ".count($jss)." requests\n";
 if(count($jss))
 {
 $mas = curl_mas2($jss,$rpc,0);
 }
-//$t = time()-$t;
+$t = time()-$t;
 //print "Get data from blockchain in ".count($jss)." requests [$t sec]\n";
-//print "<pre>";print_r($jss);print_r($mas);die;
+//print "<pre>";
+//print_r($jss);
+//print_r($mas);die;
 
 $names[1] = "i";
-$names[2] = "tx_id";
-$names[3] = "blk";
-$names[4] = "utime";
-$names[5] = "amount";
-$names[6] = "addr";
-$names[7] = "name";
-$names[8] = "id1";
-$names[9] = "id2";
+$names[2] = "ev_id";
+$names[3] = "tx_id";
+$names[4] = "unit";
+$names[5] = "level";
+$names[6] = "amount";
+$names[7] = "addr";
+$names[8] = "name";
+$names[9] = "utime";
 
 foreach($mas as $v2)
 {
@@ -119,7 +112,7 @@ foreach($mas as $v2)
 
     switch($case)
     {
-	case "TxsList":
+	case "EvList":
 //	    print 
 	    $t = substr($v,2);
 	    $l = strlen($t)/64;
@@ -161,7 +154,7 @@ if((floor($tt)==$tt) && $i>2)$t3 = "0x".substr($t2,24);
 		break;
 		case "amount":
 		    $t2 = hexdec($t2);
-		    $t2 /= 10**6;
+		    //$t2 /= 10**18;
 		break;
 		default:
 		$t2 = hexdec($t2);
@@ -170,6 +163,7 @@ if((floor($tt)==$tt) && $i>2)$t3 = "0x".substr($t2,24);
 //		$t4[$n2][$names[$n3]."_".$n3] = $t2;
 //		$t4[$i] = $t2;
 	    }
+//	    $t4[$whats][$n2][amount2] = $t4[$whats][$n2][amount2] / 10 ** decimals($t4[$whats][$n2][addr]);
 	    //$id = $t;
 	break;
 	case "deployer":
@@ -179,28 +173,22 @@ if((floor($tt)==$tt) && $i>2)$t3 = "0x".substr($t2,24);
 	    $v = hexdec($v);
 	    $v /= 10**18;
     }
-//    $t = hexdec($t);
-//    $t /= 10**6;
-//    $o[$id] = $v;
-
-//    print $t."\t";
-//    $t = $t/$kurs;
-//    print $t."\t";
-//    print "\n";
 }
+//print_r($t4);
+
 $d2 = $d."/bin/cache/tx/";
+
 foreach($t4 as $k=>$v3)
-foreach($v3 as $n=>$v2)
 {
-    switch($v2[name])
+    foreach($v3 as $n=>$v2)
+
+//foreach($t4 as $k3=>$v3)
+//{
+//    foreach($v3 as $k=>$v)
     {
-	case "Register":
-	    $t4[$k][$n][num]	= $v2[id1];
-	    $t4[$k][$n][ref] 	= $v2[id2];
-	    unset($t4[$k][$n][id1]);
-	    unset($t4[$k][$n][id2]);
-	break;
-    }
+//print "$k $n ".print_r($v2,1)."\n";
+    $t4[$k][$n][amount2] = $t4[$k][$n][amount] / 10 ** decimals($t4[$k][$n][addr]);
+//	$tx = $d."tx_".
     $t = $contractAddress3[$k];
     $t = strtolower($t);
     $f = $d2."tx_".$t."_".$v2[tx_id];
@@ -216,13 +204,10 @@ foreach($v3 as $n=>$v2)
     $t = date("Y-m-d H:i:s",$t);
     $t4[$k][$n][utc] = $t;
 
-//    $t4[$k][$n][contract] = $contractAddress3[$k];
-//    $t4[$k][$n][f] = $f;
-
+    }
 }
-//print_r($t4);die;
+
 
 //print_r($t4);
-//$o2 = $t4;
-//print_r($o);
 $o[result] = $t4;
+//print_r($o);
